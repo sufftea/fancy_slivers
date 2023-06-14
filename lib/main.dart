@@ -21,12 +21,19 @@ class MainApp extends StatelessWidget {
                 ),
               ),
             // buildScrollParalax(),
-            SliverAnimatedPage(builder: (context, data) {
-              return Container(
-                color: Colors.blue.shade900,
-                child: const Placeholder(),
-              );
-            }),
+            SliverAnimatedPage(
+              timelineFraction: 2,
+              builder: (context, data) {
+                return Container(
+                  color: Colors.blue.shade900,
+                  child: Center(
+                    child: Text(
+                      data.progress.toString(),
+                    ),
+                  ),
+                );
+              },
+            ),
             for (var i = 0; i < 3; ++i)
               const SliverToBoxAdapter(
                 child: Placeholder(
@@ -46,8 +53,9 @@ class MainApp extends StatelessWidget {
         const innerHeight = 700.0;
         // final innerHeight = constraints.viewportMainAxisExtent;
 
-        final currPos =
-            constraints.remainingPaintExtent + constraints.scrollOffset - outerHeight;
+        final currPos = constraints.remainingPaintExtent +
+            constraints.scrollOffset -
+            outerHeight;
         final totalHeight = constraints.viewportMainAxisExtent - outerHeight;
 
         final progress = currPos / totalHeight;
