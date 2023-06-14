@@ -21,19 +21,10 @@ class MainApp extends StatelessWidget {
                 ),
               ),
             // buildScrollParalax(),
-            SliverAnimatedPage(
-              timelineFraction: 2,
-              builder: (context, data) {
-                return Container(
-                  color: Colors.blue.shade900,
-                  child: Center(
-                    child: Text(
-                      data.progress.toString(),
-                    ),
-                  ),
-                );
-              },
-            ),
+            buildAnimatedPage(Colors.purple),
+            buildAnimatedPage(Colors.green),
+            buildAnimatedPage(Colors.blue),
+            buildAnimatedPage(Colors.cyan),
             for (var i = 0; i < 3; ++i)
               const SliverToBoxAdapter(
                 child: Placeholder(
@@ -43,6 +34,18 @@ class MainApp extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  SliverAnimatedPage buildAnimatedPage(Color color) {
+    return SliverAnimatedPage(
+      timelineFraction: 2,
+      builder: (context, data) {
+        return Container(
+          color: color,
+          child: const Placeholder(),
+        );
+      },
     );
   }
 
