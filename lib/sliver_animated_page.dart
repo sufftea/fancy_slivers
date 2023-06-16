@@ -38,16 +38,14 @@ class SliverAnimatedPage extends StatefulWidget {
   State<SliverAnimatedPage> createState() => _SliverAnimatedPageState();
 }
 
-class _SliverAnimatedPageState extends State<SliverAnimatedPage>
-    with TickerProviderStateMixin {
+class _SliverAnimatedPageState extends State<SliverAnimatedPage> {
   final data = ValueNotifier<SliverAnimatedPageData>(
       const SliverAnimatedPageData._initial());
 
   @override
   Widget build(BuildContext context) {
     RenderAnimatedSize;
-    return SliverSomething(
-      vsync: this,
+    return SliverAnimatedPageWidget(
       data: data,
       fraction: widget.timelineFraction,
       child: ValueListenableBuilder(
@@ -60,9 +58,8 @@ class _SliverAnimatedPageState extends State<SliverAnimatedPage>
   }
 }
 
-class SliverSomething extends SingleChildRenderObjectWidget {
-  const SliverSomething({
-    required this.vsync,
+class SliverAnimatedPageWidget extends SingleChildRenderObjectWidget {
+  const SliverAnimatedPageWidget({
     required this.data,
     required this.fraction,
     super.child,
@@ -71,12 +68,10 @@ class SliverSomething extends SingleChildRenderObjectWidget {
 
   final ValueNotifier<SliverAnimatedPageData> data;
   final double fraction;
-  final TickerProvider vsync;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return SliverSomethingRenderObject(
-      vsync: vsync,
+    return SliverAnimatedPageRenderObject(
       data: data,
       fraction: fraction,
     );
@@ -85,30 +80,19 @@ class SliverSomething extends SingleChildRenderObjectWidget {
   @override
   void updateRenderObject(
     BuildContext context,
-    SliverSomethingRenderObject renderObject,
+    SliverAnimatedPageRenderObject renderObject,
   ) {
     renderObject.fraction = fraction;
   }
 }
 
-class SliverSomethingRenderObject extends RenderSliverSingleBoxAdapter {
-  SliverSomethingRenderObject({
-    required TickerProvider vsync,
+class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
+  SliverAnimatedPageRenderObject({
     required double fraction,
     required this.data,
-  })  : _fraction = fraction,
-        animController = AnimationController(
-          vsync: vsync,
-          duration: const Duration(milliseconds: 400),
-        ) {
-    animController.addListener(() {
-      // debugPrint("animanin'. value: ${animController.value}");
-      markNeedsLayout();
-    });
-  }
+  }) : _fraction = fraction;
 
   final ValueNotifier<SliverAnimatedPageData> data;
-  final AnimationController animController;
 
   double _fraction;
   double get fraction => _fraction;
@@ -123,38 +107,19 @@ class SliverSomethingRenderObject extends RenderSliverSingleBoxAdapter {
   double get realHeight => constraints.viewportMainAxisExtent * fraction;
   double get oneLessHeight =>
       constraints.viewportMainAxisExtent * (fraction - 1);
-  double get animValue => switch (animController.status) {
-        AnimationStatus.forward ||
-        AnimationStatus.dismissed =>
-          CurveTween(curve: Curves.easeOutCirc).evaluate(
-            animController,
-          ),
-        AnimationStatus.reverse ||
-        AnimationStatus.completed =>
-          CurveTween(curve: Curves.easeInCirc).evaluate(
-            animController,
-          ),
-      };
-
-  double get animatedHeightReduction => max(
-        constraints.viewportMainAxisExtent * animValue - 300,
-        0,
-      );
 
   @override
   void performLayout() {
-    final realLayoutExtent = calculatePaintOffset(
-      constraints,
-      from: 0,
-      to: realHeight,
-    );
-
     geometry = SliverGeometry(
-      scrollExtent: realHeight - animatedHeightReduction,
-      maxPaintExtent: constraints.viewportMainAxisExtent,
-      paintExtent: max(
-        realLayoutExtent - animatedHeightReduction,
+      scrollExtent: max(
+        realHeight,
         0,
+      ),
+      maxPaintExtent: constraints.viewportMainAxisExtent,
+      paintExtent: calculatePaintOffset(
+        constraints,
+        from: 0,
+        to: realHeight,
       ),
     );
 
@@ -165,22 +130,6 @@ class SliverSomethingRenderObject extends RenderSliverSingleBoxAdapter {
 
     setChildParentData(child!, constraints, geometry!);
 
-    // ====== Animation ======
-
-    switch (animController.status) {
-      case AnimationStatus.reverse || AnimationStatus.dismissed:
-        if (realLayoutExtent < constraints.viewportMainAxisExtent &&
-            constraints.scrollOffset > 0) {
-          animController.forward();
-        }
-      case AnimationStatus.forward || AnimationStatus.completed:
-        if (realLayoutExtent >= constraints.viewportMainAxisExtent ||
-            constraints.scrollOffset == 0) {
-          animController.reverse();
-        }
-      default:
-    }
-
     // ====== Calculate SliverAnimatedPageData ======
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -190,14 +139,22 @@ class SliverSomethingRenderObject extends RenderSliverSingleBoxAdapter {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (child != null && geometry!.visible) {
-      final paintOrigin = min(
-        0.0,
-        oneLessHeight - constraints.scrollOffset - animatedHeightReduction,
-      );
-
-      context.paintChild(child!, offset + Offset(0, paintOrigin));
+    if (child == null || !geometry!.visible) {
+      return;
     }
+
+    context.clipRectAndPaint(
+      offset &
+          Size(
+            constraints.crossAxisExtent,
+            geometry!.paintExtent,
+          ),
+      Clip.hardEdge,
+      Rect.zero,
+      () {
+        context.paintChild(child!, Offset.zero);
+      },
+    );
   }
 
   void _updatePageData() {

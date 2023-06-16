@@ -1,4 +1,5 @@
 import 'package:fancy_slivers/sliver_animated_page.dart';
+import 'package:fancy_slivers/sliver_particles.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,6 +15,25 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: CustomScrollView(
           slivers: [
+            SliverParticles(
+              speed: 2,
+              overlayBuilder: (context, data) {
+                return Stack(
+                  children: [
+                    Positioned(
+                      bottom: data.totalHeight != 0
+                          ? data.scrollOffset * 2 % data.totalHeight
+                          : 0,
+                      child: Container(
+                        color: Colors.amber,
+                        width: 50,
+                        height: 50,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
             for (var i = 0; i < 3; ++i)
               const SliverToBoxAdapter(
                 child: Placeholder(
