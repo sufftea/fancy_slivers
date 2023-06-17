@@ -1,5 +1,7 @@
-import 'package:fancy_slivers/sliver_animated_page.dart';
-import 'package:fancy_slivers/sliver_particles.dart';
+import 'package:fancy_slivers/entries/anim_page_1/anim_page_1.dart';
+import 'package:fancy_slivers/entries/anim_page_2/anim_page_2.dart';
+import 'package:fancy_slivers/entries/particles_entry.dart';
+import 'package:fancy_slivers/slivers/sliver_animated_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -15,34 +17,8 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: CustomScrollView(
           slivers: [
-            SliverParticles(
-              speed: 2,
-              overlayBuilder: (context, data) {
-                return Stack(
-                  children: [
-                    Positioned(
-                      bottom: data.totalHeight != 0
-                          ? data.scrollOffset * 2 % data.totalHeight
-                          : 0,
-                      child: Container(
-                        color: Colors.amber,
-                        width: 50,
-                        height: 50,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            for (var i = 0; i < 3; ++i)
-              const SliverToBoxAdapter(
-                child: Placeholder(
-                  fallbackHeight: 400,
-                ),
-              ),
-            // buildScrollParalax(),
-            buildAnimatedPage(Colors.purple),
-            buildAnimatedPage(Colors.green),
+            const AnimPage1(),
+            const AnimPage2(),
             buildAnimatedPage(Colors.blue),
             buildAnimatedPage(Colors.cyan),
             for (var i = 0; i < 3; ++i)
@@ -106,3 +82,4 @@ class MainApp extends StatelessWidget {
     );
   }
 }
+

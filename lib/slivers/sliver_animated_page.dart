@@ -6,9 +6,12 @@ import 'package:flutter/widgets.dart';
 class SliverAnimatedPageData {
   const SliverAnimatedPageData({
     required this.progress,
+    required this.maxHeight,
   });
 
-  const SliverAnimatedPageData._initial() : progress = -1;
+  const SliverAnimatedPageData._initial()
+      : progress = -1,
+        maxHeight = 0;
 
   /// Goes from -1 to 2.
   ///
@@ -17,6 +20,7 @@ class SliverAnimatedPageData {
   ///  0 -- 1: When the sliver has filled the view entirely
   ///  1 -- 2: When the sliver is moving out of the view (up)
   final double progress;
+  final double maxHeight;
 }
 
 typedef SliverAnimatedPageBuilder = Widget Function(
@@ -28,11 +32,13 @@ class SliverAnimatedPage extends StatefulWidget {
   const SliverAnimatedPage({
     required this.builder,
     required this.timelineFraction,
+    this.contentSpeed = 1,
     super.key,
   });
 
   final SliverAnimatedPageBuilder builder;
   final double timelineFraction;
+  final double contentSpeed;
 
   @override
   State<SliverAnimatedPage> createState() => _SliverAnimatedPageState();
@@ -48,6 +54,7 @@ class _SliverAnimatedPageState extends State<SliverAnimatedPage> {
     return SliverAnimatedPageWidget(
       data: data,
       fraction: widget.timelineFraction,
+      speed: widget.contentSpeed,
       child: ValueListenableBuilder(
         valueListenable: data,
         builder: (context, value, child) {
@@ -62,18 +69,21 @@ class SliverAnimatedPageWidget extends SingleChildRenderObjectWidget {
   const SliverAnimatedPageWidget({
     required this.data,
     required this.fraction,
+    required this.speed,
     super.child,
     super.key,
   });
 
   final ValueNotifier<SliverAnimatedPageData> data;
   final double fraction;
+  final double speed;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     return SliverAnimatedPageRenderObject(
       data: data,
       fraction: fraction,
+      speed: speed,
     );
   }
 
@@ -83,14 +93,17 @@ class SliverAnimatedPageWidget extends SingleChildRenderObjectWidget {
     SliverAnimatedPageRenderObject renderObject,
   ) {
     renderObject.fraction = fraction;
+    renderObject.speed = speed;
   }
 }
 
 class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
   SliverAnimatedPageRenderObject({
     required double fraction,
+    required double speed,
     required this.data,
-  }) : _fraction = fraction;
+  })  : _fraction = fraction,
+        _speed = speed;
 
   final ValueNotifier<SliverAnimatedPageData> data;
 
@@ -103,6 +116,15 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
     markNeedsLayout();
   }
 
+  double _speed;
+  double get speed => _speed;
+  set speed(double value) {
+    if (_speed == value) return;
+
+    _speed = value;
+    markNeedsLayout();
+  }
+
   /// CONVENIENCE GETTERS
   double get realHeight => constraints.viewportMainAxisExtent * fraction;
   double get oneLessHeight =>
@@ -110,23 +132,29 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
   @override
   void performLayout() {
+    child!.layout(
+      constraints.asBoxConstraints(
+        maxExtent: constraints.viewportMainAxisExtent,
+      ),
+      parentUsesSize: true,
+    );
+    final childHeight = child!.size.height;
+
     geometry = SliverGeometry(
       scrollExtent: max(
         realHeight,
         0,
       ),
       maxPaintExtent: constraints.viewportMainAxisExtent,
-      paintExtent: calculatePaintOffset(
-        constraints,
-        from: 0,
-        to: realHeight,
+      paintExtent: min(
+        calculatePaintOffset(
+          constraints,
+          from: 0,
+          to: realHeight - constraints.viewportMainAxisExtent + childHeight,
+        ),
+        childHeight,
       ),
     );
-
-    child!.layout(constraints.asBoxConstraints(
-      maxExtent: constraints.viewportMainAxisExtent,
-      minExtent: constraints.viewportMainAxisExtent,
-    ));
 
     setChildParentData(child!, constraints, geometry!);
 
@@ -143,6 +171,11 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
       return;
     }
 
+    final o = max(
+      constraints.scrollOffset - oneLessHeight,
+      0.0,
+    );
+
     context.clipRectAndPaint(
       offset &
           Size(
@@ -152,7 +185,7 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
       Clip.hardEdge,
       Rect.zero,
       () {
-        context.paintChild(child!, Offset.zero);
+        context.paintChild(child!, (offset - Offset(0, o)) * speed);
       },
     );
   }
@@ -163,6 +196,7 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
     data.value = SliverAnimatedPageData(
       progress: p / oneLessHeight,
+      maxHeight: constraints.viewportMainAxisExtent,
     );
   }
 }
