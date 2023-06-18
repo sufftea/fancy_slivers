@@ -7,8 +7,10 @@ class AnimPage1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAnimatedPage(
-      timelineFraction: 1,
-      contentSpeed: 0.5,
+      style: const SliverAnimatedPageStyle(
+        timelineFraction: 1,
+        speed: 0.5,
+      ),
       builder: (context, data) {
         return Image.network(
           'https://www.availableideas.com/wp-content/uploads/2016/02/Sad-Puppy-Dog-Bokeh-Background-iPhone-6-wallpaper.jpg',

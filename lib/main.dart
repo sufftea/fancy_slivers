@@ -1,7 +1,8 @@
 import 'package:fancy_slivers/entries/anim_page_1/anim_page_1.dart';
 import 'package:fancy_slivers/entries/anim_page_2/anim_page_2.dart';
-import 'package:fancy_slivers/entries/particles_entry.dart';
-import 'package:fancy_slivers/slivers/sliver_animated_page.dart';
+import 'package:fancy_slivers/entries/anim_page_3/anim_page_3.dart';
+import 'package:fancy_slivers/entries/anim_page_4/anim_page_4.dart';
+import 'package:fancy_slivers/paint_order_scroll_view/paint_order_scroll_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -15,33 +16,28 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: CustomScrollView(
-          slivers: [
-            const AnimPage1(),
-            const AnimPage2(),
-            buildAnimatedPage(Colors.blue),
-            buildAnimatedPage(Colors.cyan),
-            for (var i = 0; i < 3; ++i)
-              const SliverToBoxAdapter(
-                child: Placeholder(
-                  fallbackHeight: 400,
-                ),
+        backgroundColor: Colors.white,
+        body: PaintOrderScrollView(
+          childrenPaintOrder: const [
+            1,
+            0,
+            2,
+            3,
+            4,
+          ],
+          slivers: const [
+            AnimPage1(),
+            AnimPage2(),
+            AnimPage3(),
+            AnimPage4(),
+            SliverToBoxAdapter(
+              child: Placeholder(
+                fallbackHeight: 400,
               ),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  SliverAnimatedPage buildAnimatedPage(Color color) {
-    return SliverAnimatedPage(
-      timelineFraction: 2,
-      builder: (context, data) {
-        return Container(
-          color: color,
-          child: const Placeholder(),
-        );
-      },
     );
   }
 
@@ -82,4 +78,3 @@ class MainApp extends StatelessWidget {
     );
   }
 }
-

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -7,11 +8,24 @@ class SliverAnimatedPageData {
   const SliverAnimatedPageData({
     required this.progress,
     required this.maxHeight,
+    required this.maxWidth,
+    required this.scrollOffset,
   });
 
   const SliverAnimatedPageData._initial()
       : progress = -1,
-        maxHeight = 0;
+        maxHeight = 0,
+        maxWidth = 0,
+        scrollOffset = 0;
+
+  /// Convenience getter for [progress]
+  double get preShowProgress => clampDouble(progress + 1, 0, 1);
+
+  /// Convenience getter for [progress]
+  double get showProgress => clampDouble(progress, 0, 1);
+
+  /// Convenience getter for [progress]
+  double get postShowProgress => clampDouble(progress - 1, 0, 1);
 
   /// Goes from -1 to 2.
   ///
@@ -21,6 +35,8 @@ class SliverAnimatedPageData {
   ///  1 -- 2: When the sliver is moving out of the view (up)
   final double progress;
   final double maxHeight;
+  final double maxWidth;
+  final double scrollOffset;
 }
 
 typedef SliverAnimatedPageBuilder = Widget Function(
@@ -28,17 +44,27 @@ typedef SliverAnimatedPageBuilder = Widget Function(
   SliverAnimatedPageData data,
 );
 
+class SliverAnimatedPageStyle {
+  const SliverAnimatedPageStyle({
+    required this.timelineFraction,
+    this.speed = 1,
+    this.clip = true,
+  });
+
+  final double timelineFraction;
+  final double speed;
+  final bool clip;
+}
+
 class SliverAnimatedPage extends StatefulWidget {
   const SliverAnimatedPage({
     required this.builder,
-    required this.timelineFraction,
-    this.contentSpeed = 1,
+    required this.style,
     super.key,
   });
 
   final SliverAnimatedPageBuilder builder;
-  final double timelineFraction;
-  final double contentSpeed;
+  final SliverAnimatedPageStyle style;
 
   @override
   State<SliverAnimatedPage> createState() => _SliverAnimatedPageState();
@@ -53,8 +79,7 @@ class _SliverAnimatedPageState extends State<SliverAnimatedPage> {
     RenderAnimatedSize;
     return SliverAnimatedPageWidget(
       data: data,
-      fraction: widget.timelineFraction,
-      speed: widget.contentSpeed,
+      style: widget.style,
       child: ValueListenableBuilder(
         valueListenable: data,
         builder: (context, value, child) {
@@ -68,22 +93,20 @@ class _SliverAnimatedPageState extends State<SliverAnimatedPage> {
 class SliverAnimatedPageWidget extends SingleChildRenderObjectWidget {
   const SliverAnimatedPageWidget({
     required this.data,
-    required this.fraction,
-    required this.speed,
+    required this.style,
     super.child,
     super.key,
   });
 
   final ValueNotifier<SliverAnimatedPageData> data;
-  final double fraction;
-  final double speed;
+
+  final SliverAnimatedPageStyle style;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
     return SliverAnimatedPageRenderObject(
       data: data,
-      fraction: fraction,
-      speed: speed,
+      style: style,
     );
   }
 
@@ -92,43 +115,30 @@ class SliverAnimatedPageWidget extends SingleChildRenderObjectWidget {
     BuildContext context,
     SliverAnimatedPageRenderObject renderObject,
   ) {
-    renderObject.fraction = fraction;
-    renderObject.speed = speed;
+    renderObject.style = style;
   }
 }
 
 class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
   SliverAnimatedPageRenderObject({
-    required double fraction,
-    required double speed,
+    required SliverAnimatedPageStyle style,
     required this.data,
-  })  : _fraction = fraction,
-        _speed = speed;
+  }) : _style = style;
 
   final ValueNotifier<SliverAnimatedPageData> data;
 
-  double _fraction;
-  double get fraction => _fraction;
-  set fraction(double value) {
-    if (_fraction == value) return;
+  SliverAnimatedPageStyle _style;
+  SliverAnimatedPageStyle get style => _style;
+  set style(SliverAnimatedPageStyle value) {
+    if (_style == value) return;
 
-    _fraction = value;
-    markNeedsLayout();
-  }
-
-  double _speed;
-  double get speed => _speed;
-  set speed(double value) {
-    if (_speed == value) return;
-
-    _speed = value;
+    _style = value;
     markNeedsLayout();
   }
 
   /// CONVENIENCE GETTERS
-  double get realHeight => constraints.viewportMainAxisExtent * fraction;
   double get oneLessHeight =>
-      constraints.viewportMainAxisExtent * (fraction - 1);
+      constraints.viewportMainAxisExtent * (style.timelineFraction - 1);
 
   @override
   void performLayout() {
@@ -142,7 +152,7 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
     geometry = SliverGeometry(
       scrollExtent: max(
-        realHeight,
+        oneLessHeight + childHeight,
         0,
       ),
       maxPaintExtent: constraints.viewportMainAxisExtent,
@@ -150,16 +160,16 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
         calculatePaintOffset(
           constraints,
           from: 0,
-          to: realHeight - constraints.viewportMainAxisExtent + childHeight,
+          to: oneLessHeight + childHeight,
         ),
         childHeight,
       ),
+      visible: true,
     );
 
     setChildParentData(child!, constraints, geometry!);
 
     // ====== Calculate SliverAnimatedPageData ======
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updatePageData();
     });
@@ -167,7 +177,8 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (child == null || !geometry!.visible) {
+    if (child == null) {
+      // || !geometry!.visible
       return;
     }
 
@@ -176,18 +187,18 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
       0.0,
     );
 
-    context.clipRectAndPaint(
-      offset &
-          Size(
-            constraints.crossAxisExtent,
-            geometry!.paintExtent,
-          ),
-      Clip.hardEdge,
-      Rect.zero,
-      () {
-        context.paintChild(child!, (offset - Offset(0, o)) * speed);
-      },
-    );
+    if (style.clip) {
+      context.clipRectAndPaint(
+        offset & Size(constraints.crossAxisExtent, geometry!.paintExtent),
+        Clip.hardEdge,
+        Rect.zero,
+        () {
+          context.paintChild(child!, (offset - Offset(0, o)) * style.speed);
+        },
+      );
+    } else {
+      context.paintChild(child!, (offset - Offset(0, o)) * style.speed);
+    }
   }
 
   void _updatePageData() {
@@ -196,7 +207,9 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
     data.value = SliverAnimatedPageData(
       progress: p / oneLessHeight,
+      scrollOffset: constraints.scrollOffset,
       maxHeight: constraints.viewportMainAxisExtent,
+      maxWidth: constraints.crossAxisExtent,
     );
   }
 }
