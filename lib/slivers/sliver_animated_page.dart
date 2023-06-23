@@ -7,15 +7,15 @@ import 'package:flutter/widgets.dart';
 class SliverAnimatedPageData {
   const SliverAnimatedPageData({
     required this.progress,
-    required this.maxHeight,
-    required this.maxWidth,
+    required this.viewportHeight,
+    required this.viewportWidth,
     required this.scrollOffset,
   });
 
   const SliverAnimatedPageData._initial()
       : progress = -1,
-        maxHeight = 0,
-        maxWidth = 0,
+        viewportHeight = 0,
+        viewportWidth = 0,
         scrollOffset = 0;
 
   /// Convenience getter for [progress]
@@ -33,9 +33,11 @@ class SliverAnimatedPageData {
   /// filled the view entirely.
   ///  0 -- 1: When the sliver has filled the view entirely
   ///  1 -- 2: When the sliver is moving out of the view (up)
+  ///
+  /// Note: doesn't work when timelineFraction == 1
   final double progress;
-  final double maxHeight;
-  final double maxWidth;
+  final double viewportHeight;
+  final double viewportWidth;
   final double scrollOffset;
 }
 
@@ -47,6 +49,7 @@ typedef SliverAnimatedPageBuilder = Widget Function(
 class SliverAnimatedPageStyle {
   const SliverAnimatedPageStyle({
     required this.timelineFraction,
+    required this.visible,
     this.speed = 1,
     this.clip = true,
   });
@@ -54,6 +57,7 @@ class SliverAnimatedPageStyle {
   final double timelineFraction;
   final double speed;
   final bool clip;
+  final bool? Function(SliverConstraints constraints) visible;
 }
 
 class SliverAnimatedPage extends StatefulWidget {
@@ -137,8 +141,10 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
   }
 
   /// CONVENIENCE GETTERS
-  double get oneLessHeight =>
-      constraints.viewportMainAxisExtent * (style.timelineFraction - 1);
+  double get oneLessHeight => max(
+        constraints.viewportMainAxisExtent * (style.timelineFraction - 1),
+        0,
+      );
 
   @override
   void performLayout() {
@@ -151,20 +157,20 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
     final childHeight = child!.size.height;
 
     geometry = SliverGeometry(
-      scrollExtent: max(
-        oneLessHeight + childHeight,
-        0,
-      ),
+      scrollExtent: oneLessHeight + childHeight,
       maxPaintExtent: constraints.viewportMainAxisExtent,
       paintExtent: min(
         calculatePaintOffset(
           constraints,
           from: 0,
-          to: oneLessHeight + childHeight,
+          to: switch (style.timelineFraction) {
+            <= 1 => constraints.viewportMainAxisExtent * style.timelineFraction,
+            _ => oneLessHeight + childHeight,
+          },
         ),
         childHeight,
       ),
-      visible: true,
+      visible: style.visible(constraints),
     );
 
     setChildParentData(child!, constraints, geometry!);
@@ -177,8 +183,7 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
 
   @override
   void paint(PaintingContext context, Offset offset) {
-    if (child == null) {
-      // || !geometry!.visible
+    if (child == null || !geometry!.visible) {
       return;
     }
 
@@ -208,8 +213,8 @@ class SliverAnimatedPageRenderObject extends RenderSliverSingleBoxAdapter {
     data.value = SliverAnimatedPageData(
       progress: p / oneLessHeight,
       scrollOffset: constraints.scrollOffset,
-      maxHeight: constraints.viewportMainAxisExtent,
-      maxWidth: constraints.crossAxisExtent,
+      viewportHeight: constraints.viewportMainAxisExtent,
+      viewportWidth: constraints.crossAxisExtent,
     );
   }
 }

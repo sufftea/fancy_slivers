@@ -19,4 +19,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   shaders:
-    - assets/shaders/particles.frag
+    - assets/shaders/wave.frag
+
+  assets:
+    - assets/images/

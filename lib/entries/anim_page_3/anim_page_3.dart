@@ -10,18 +10,21 @@ class AnimPage3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAnimatedPage(
-      style: const SliverAnimatedPageStyle(
+      style: SliverAnimatedPageStyle(
         timelineFraction: 3,
         speed: 1,
         clip: false,
+        visible: (constraints) {
+          return true;
+        },
       ),
       builder: (context, data) {
         // final width = lerpDouble(200, data.maxWidth, data.preShowProgress) ?? 0;
         // double topOffset = clampDouble(data.scrollOffset, 0, width / 2);
 
         final width = lerpDouble(
-          data.maxWidth / 2,
-          data.maxWidth,
+          data.viewportWidth / 2,
+          data.viewportWidth,
           min(
             Curves.easeInCirc.transform(data.preShowProgress) * 2,
             1,
@@ -34,15 +37,15 @@ class AnimPage3 extends StatelessWidget {
         )!;
 
         return SizedBox(
-          height: data.maxHeight -
+          height: data.viewportHeight -
               100 * Curves.easeInCirc.transform(data.showProgress),
           child: Stack(
             children: [
               Positioned(
                 top: -topOffset,
-                height: data.maxHeight + topOffset,
+                height: data.viewportHeight + topOffset,
                 width: width,
-                left: (data.maxWidth - width) / 2,
+                left: (data.viewportWidth - width) / 2,
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.blue.shade200,

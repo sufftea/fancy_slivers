@@ -9,18 +9,21 @@ class AnimPage2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAnimatedPage(
-      style: const SliverAnimatedPageStyle(
+      style: SliverAnimatedPageStyle(
         timelineFraction: 2,
         clip: false,
         speed: 0.5,
+        visible: (constraints) {
+          return constraints.scrollOffset <
+              constraints.viewportMainAxisExtent * 2;
+        },
       ),
       builder: (context, data) {
-        return Container(
+        return SizedBox(
           height: max(
-            data.maxHeight - 100 * data.showProgress,
+            data.viewportHeight - 100 * data.showProgress,
             0.0,
           ),
-          color: Colors.transparent,
           child: const Placeholder(),
         );
       },
