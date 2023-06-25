@@ -40,7 +40,6 @@ class WaveSliver extends StatelessWidget {
       speed: properties.parallaxSpeed,
       viewportFraction: 1,
       builder: (context, parallaxData) {
-        debugPrint('building child. received value: $parallaxData');
 
         return SizedBox(
           height: parallaxData.idealHeight,

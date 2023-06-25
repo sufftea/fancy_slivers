@@ -165,6 +165,9 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
           idealHeight: idealHeight,
           sliverHeight: scrollExtent,
           scrollOffset: constraints.scrollOffset,
+          contentOffset: (height) {
+            return calculateChildOffset(scrollExtent, height);
+          },
         ));
       });
     }
@@ -193,35 +196,54 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
       return;
     }
 
-    final viewportCenter = constraints.viewportMainAxisExtent / 2;
-
-    final sliverCenter =
-        offset.dy - constraints.scrollOffset + geometry!.scrollExtent / 2;
-
-    final childCenter =
-        -(viewportCenter - sliverCenter) * speed + viewportCenter;
-
-    final childDy = childCenter - child!.size.height / 2;
+    final childOffset = calculateChildOffset(
+      geometry!.scrollExtent,
+      child!.size.height,
+    );
 
     context.clipRectAndPaint(
       offset & Size(constraints.crossAxisExtent, geometry!.paintExtent),
       Clip.hardEdge,
       Rect.zero,
       () {
-        context.paintChild(child!, Offset(offset.dx, childDy));
+        context.paintChild(
+          child!,
+          Offset(
+            offset.dx,
+            childOffset,
+          ),
+        );
       },
     );
+  }
+
+  double calculateChildOffset(double scrollExtent, double childHeight) {
+    final viewportCenter = constraints.viewportMainAxisExtent / 2;
+
+    final sliverCenter = constraints.precedingScrollExtent -
+        constraints.scrollOffset +
+        scrollExtent / 2;
+
+    final childCenter =
+        -(viewportCenter - sliverCenter) * speed + viewportCenter;
+
+    return childCenter - childHeight / 2;
   }
 }
 
 class ParallaxData {
-  const ParallaxData({
+  ParallaxData({
     this.scrollOffset = 0,
     this.idealHeight = 0,
     this.sliverHeight = 0,
+    this.contentOffset,
   });
 
   final double scrollOffset;
   final double idealHeight;
   final double sliverHeight;
+
+  // content height is unknown when this is composed, so you need to provide 
+  // the height you're going to set to the child.
+  late final double Function(double contentHeight)? contentOffset;
 }

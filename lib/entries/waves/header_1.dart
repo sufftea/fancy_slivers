@@ -15,17 +15,16 @@ class Header1 extends StatelessWidget {
       listen: true,
       builder: (context, data) {
 
-        final topOffset = data.scrollOffset + 50;
+        final topOffset = data.contentOffset?.call(data.idealHeight) ?? 0;
 
         debugPrint('topOffset = $topOffset');
 
-        return Container(
+        return SizedBox(
           height: data.idealHeight,
-          color: Colors.green.withOpacity(0.8),
           child: Stack(
             children: [
               Positioned(
-                top: topOffset,
+                top: - topOffset,
                 right: 0,
                 left: 0,
                 bottom: 0,
@@ -35,7 +34,8 @@ class Header1 extends StatelessWidget {
                     'Header',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 70,
+                      fontSize: 100,
+                      fontWeight: FontWeight.bold
                     ),
                   ),
                 ),
