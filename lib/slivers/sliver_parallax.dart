@@ -1,10 +1,16 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-class SliverParallax extends SingleChildRenderObjectWidget {
+typedef ParallaxBuilder = Widget Function(
+  BuildContext context,
+  ParallaxData data,
+);
+
+class SliverParallax extends RenderObjectWidget {
   const SliverParallax({
-    required super.child,
     required this.speed,
+    required this.builder,
+    this.listen = false,
     this.sliverHeight,
     this.viewportFraction,
     super.key,
@@ -15,13 +21,102 @@ class SliverParallax extends SingleChildRenderObjectWidget {
   final double? sliverHeight;
   final double? viewportFraction;
 
+  final ParallaxBuilder builder;
+  final bool listen;
+
+  @override
+  RenderObjectElement createElement() {
+    return SliverParallaxElement(this);
+  }
+
   @override
   RenderObject createRenderObject(BuildContext context) {
     return SliverParallaxRenderObject(
       speed: speed,
       sliverHeight: sliverHeight,
       viewportFraction: viewportFraction,
+      listen: listen,
     );
+  }
+}
+
+class SliverParallaxElement extends RenderObjectElement {
+  SliverParallaxElement(SliverParallax super.widget);
+
+  Element? _child;
+
+  @override
+  SliverParallax get widget => super.widget as SliverParallax;
+  @override
+  SliverParallaxRenderObject get renderObject =>
+      super.renderObject as SliverParallaxRenderObject;
+
+  @override
+  void visitChildren(ElementVisitor visitor) {
+    if (_child != null) {
+      visitor(_child!);
+    }
+  }
+
+  @override
+  void forgetChild(Element child) {
+    assert(child == _child);
+    _child = null;
+    super.forgetChild(child);
+  }
+
+  @override
+  void mount(Element? parent, Object? newSlot) {
+    super.mount(parent, newSlot);
+
+    renderObject.rebuildChildCallback = _updateCallback;
+  }
+
+  @override
+  void update(SingleChildRenderObjectWidget newWidget) {
+    super.update(newWidget);
+
+    renderObject.rebuildChildCallback = _updateCallback;
+    renderObject.markNeedsLayout();
+  }
+
+  @override
+  void unmount() {
+    renderObject.rebuildChildCallback = null;
+    renderObject.child = null;
+    super.unmount();
+  }
+
+  @override
+  void insertRenderObjectChild(RenderObject child, Object? slot) {
+    renderObject.child = child as RenderBox;
+  }
+
+  @override
+  void moveRenderObjectChild(
+    RenderObject child,
+    Object? oldSlot,
+    Object? newSlot,
+  ) {
+    assert(false);
+  }
+
+  @override
+  void removeRenderObjectChild(RenderObject child, Object? slot) {
+    final renderObject = this.renderObject;
+
+    renderObject.child = null;
+    renderObject.rebuildChildCallback = null;
+  }
+
+  void _updateCallback(ParallaxData data) {
+    owner!.buildScope(this, () {
+      _child = updateChild(
+        _child,
+        widget.builder(this, data),
+        null,
+      );
+    });
   }
 }
 
@@ -30,10 +125,20 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
     required this.speed,
     required this.sliverHeight,
     required this.viewportFraction,
+    required this.listen,
   });
+  // TODO: get/set
   final double speed;
   final double? sliverHeight;
   final double? viewportFraction;
+  final bool listen;
+
+  void Function(ParallaxData)? _rebuildChildCallback;
+  set rebuildChildCallback(void Function(ParallaxData)? fun) {
+    _rebuildChildCallback = fun;
+  }
+
+  bool _childWasBuilt = false;
 
   @override
   void performLayout() {
@@ -53,14 +158,19 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
         }(),
     };
 
-    debugPrint('idealHeight: $idealHeight');
+    if (!_childWasBuilt || listen) {
+      _childWasBuilt = true;
+      invokeLayoutCallback((_) {
+        _rebuildChildCallback?.call(ParallaxData(
+          idealHeight: idealHeight,
+          sliverHeight: scrollExtent,
+          scrollOffset: constraints.scrollOffset,
+        ));
+      });
+    }
 
     child!.layout(
-      MyCustomConstraints(
-        width: constraints.crossAxisExtent,
-        sliverHeight: scrollExtent,
-        idealHeight: idealHeight,
-      ),
+      constraints.asBoxConstraints(),
       parentUsesSize: true,
     );
 
@@ -104,20 +214,14 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
   }
 }
 
-class MyCustomConstraints extends BoxConstraints {
-  const MyCustomConstraints({
-    required double width,
-    double minHeight = 0.0,
-    double maxHeight = double.infinity,
-    this.sliverHeight = 0,
+class ParallaxData {
+  const ParallaxData({
+    this.scrollOffset = 0,
     this.idealHeight = 0,
-  }) : super(
-          minWidth: width,
-          maxWidth: width,
-          minHeight: minHeight,
-          maxHeight: maxHeight,
-        );
+    this.sliverHeight = 0,
+  });
 
-  final double sliverHeight;
+  final double scrollOffset;
   final double idealHeight;
+  final double sliverHeight;
 }

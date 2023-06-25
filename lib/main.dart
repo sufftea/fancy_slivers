@@ -1,9 +1,8 @@
-import 'package:fancy_slivers/entries/anim_page_1/anim_page_1.dart';
-import 'package:fancy_slivers/entries/anim_page_2/anim_page_2.dart';
-import 'package:fancy_slivers/entries/anim_page_3/anim_page_3.dart';
-import 'package:fancy_slivers/entries/anim_page_4/anim_page_4.dart';
+import 'package:fancy_slivers/entries/waves/wave_sliver.dart';
+import 'package:fancy_slivers/entries/waves/header_1.dart';
+import 'package:fancy_slivers/entries/waves/wave_stack.dart';
 import 'package:fancy_slivers/paint_order_scroll_view/paint_order_scroll_view.dart';
-import 'package:fancy_slivers/slivers/sliver_animated_page.dart';
+import 'package:fancy_slivers/slivers/sliver_parallax.dart';
 import 'package:fancy_slivers/slivers/sliver_stack.dart';
 import 'package:flutter/material.dart';
 
@@ -19,107 +18,28 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.black,
-        body: CustomScrollView(
+        body: PaintOrderScrollView(
+          childrenPaintOrder: const [
+            0,
+            1,
+            2,
+            3,
+          ],
           slivers: [
+            const WaveStack(),
             for (int i = 0; i < 3; i++)
               const SliverToBoxAdapter(
-                child: Placeholder(
-                  fallbackHeight: 500,
-                ),
-              ),
-            buildSliverStack(),
-            for (int i = 0; i < 3; i++)
-              const SliverToBoxAdapter(
-                child: Placeholder(
-                  fallbackHeight: 500,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.black),
+                  child: Placeholder(
+                    color: Colors.purple,
+                    fallbackHeight: 500,
+                  ),
                 ),
               ),
           ],
         ),
       ),
-    );
-  }
-
-  SliverStack buildSliverStack() {
-    return const SliverStack(
-      children: [
-        AnimPage1(
-          image: 'assets/images/lighthouse_4.png',
-          speed: 2,
-        ),
-        // AnimPage1(
-        //   image: 'assets/images/lighthouse_3.png',
-        //   speed: 0.4,
-        // ),
-        // AnimPage1(
-        //   image: 'assets/images/lighthouse_2.png',
-        //   speed: 0.6,
-        // ),
-        // AnimPage1(
-        //   image: 'assets/images/lighthouse_1.png',
-        //   speed: 0.7,
-        // ),
-        // AnimPage1(
-        //   image: 'assets/images/lighthouse_0.png',
-        //   speed: 1,
-        // ),
-        // DecoratedBox(
-        //   decoration: BoxDecoration(
-        //     gradient: LinearGradient(
-        //       colors: [
-        //         Colors.black,
-        //         Colors.black87,
-        //         Colors.transparent,
-        //       ],
-        //       stops: [
-        //         0,
-        //         0.1,
-        //         0.3,
-        //       ],
-        //       begin: Alignment.bottomCenter,
-        //       end: Alignment.topCenter,
-        //     ),
-        //     // color: Colors.blue.withOpacity(0.5),
-        //   ),
-        // ),
-      ],
-    );
-  }
-
-  SliverLayoutBuilder buildScrollParalax() {
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        const outerHeight = 500.0;
-        const innerHeight = 700.0;
-        // final innerHeight = constraints.viewportMainAxisExtent;
-
-        final currPos = constraints.remainingPaintExtent +
-            constraints.scrollOffset -
-            outerHeight;
-        final totalHeight = constraints.viewportMainAxisExtent - outerHeight;
-
-        final progress = currPos / totalHeight;
-
-        return SliverToBoxAdapter(
-          child: SizedBox(
-            height: outerHeight,
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -(innerHeight - outerHeight) * (1 - progress),
-                  left: 0,
-                  right: 0,
-                  height: innerHeight,
-                  child: Image.network(
-                    'https://wallpapercave.com/wp/wp4385795.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

@@ -16,13 +16,19 @@
       "name": "fancy_slivers (profile mode)",
       "request": "launch",
       "type": "dart",
-      "flutterMode": "profile"
+      "flutterMode": "profile",
+      "args": [
+        "--web-renderer=canvaskit"
+      ],
     },
     {
       "name": "fancy_slivers (release mode)",
       "request": "launch",
       "type": "dart",
-      "flutterMode": "release"
+      "flutterMode": "release",
+      "args": [
+        "--web-renderer=canvaskit"
+      ],
     }
   ]
 }
