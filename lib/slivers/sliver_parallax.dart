@@ -77,7 +77,7 @@ class SliverParallaxElement extends RenderObjectElement {
     super.update(newWidget);
 
     renderObject.rebuildChildCallback = _updateCallback;
-    renderObject.markNeedsLayout();
+    renderObject.markNeedsBuild();
   }
 
   @override
@@ -138,7 +138,11 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
     _rebuildChildCallback = fun;
   }
 
-  bool _childWasBuilt = false;
+  bool _needsChildRebuild = true;
+  void markNeedsBuild() {
+    _needsChildRebuild = true;
+    markNeedsLayout();
+  }
 
   @override
   void performLayout() {
@@ -158,8 +162,15 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
         }(),
     };
 
-    if (!_childWasBuilt || listen) {
-      _childWasBuilt = true;
+
+    /// TODO: So I don't forget tomorrow
+    /// 
+    /// You need to rebuild the child when the screen resizes even if [listen] 
+    /// is false
+    /// 
+
+    if (_needsChildRebuild || listen) {
+      _needsChildRebuild = false;
       invokeLayoutCallback((_) {
         _rebuildChildCallback?.call(ParallaxData(
           idealHeight: idealHeight,

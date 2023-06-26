@@ -14,17 +14,16 @@ class Header1 extends StatelessWidget {
       speed: WaveSliver.allWaves.last.parallaxSpeed,
       listen: true,
       builder: (context, data) {
+        MediaQuery.sizeOf(context);
 
         final topOffset = data.contentOffset?.call(data.idealHeight) ?? 0;
-
-        debugPrint('topOffset = $topOffset');
 
         return SizedBox(
           height: data.idealHeight,
           child: Stack(
             children: [
               Positioned(
-                top: - topOffset,
+                top: -topOffset,
                 right: 0,
                 left: 0,
                 bottom: 0,
@@ -33,10 +32,9 @@ class Header1 extends StatelessWidget {
                   child: Text(
                     'Header',
                     style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 100,
-                      fontWeight: FontWeight.bold
-                    ),
+                        color: Colors.black,
+                        fontSize: 100,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

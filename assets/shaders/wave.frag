@@ -12,7 +12,8 @@ uniform float waveLength;
 uniform float waveAmplitude;
 uniform float quirk; // 0 to 1
 uniform float flickersSpacing;
-// uniform vec3 color;
+uniform vec3 color;
+uniform vec3 flickerColor;
 
 out vec4 fragColor;
 
@@ -36,10 +37,10 @@ vec4 shade() {
     return vec4(0,0,0,0);
   }
   float flicker = mod(pos.y - blue, flickersSpacing);
-  if (flicker < 2) {
-    return vec4(1, 1, 1, 1);
+  if (flicker < 1) {
+    return vec4(flickerColor.r, flickerColor.g, flickerColor.b, 1);
   }
-  return vec4(57.0 / 255, 136.0 / 255, 220.0 / 255, 1);
+  return vec4(color.r, color.g, color.b, 1);
 }
 
 

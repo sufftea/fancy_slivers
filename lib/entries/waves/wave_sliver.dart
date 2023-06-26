@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fancy_slivers/slivers/sliver_parallax.dart';
+import 'package:fancy_slivers/utils/base_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 
@@ -40,7 +41,6 @@ class WaveSliver extends StatelessWidget {
       speed: properties.parallaxSpeed,
       viewportFraction: 1,
       builder: (context, parallaxData) {
-
         return SizedBox(
           height: parallaxData.idealHeight,
           child: ShaderBuilder(
@@ -92,6 +92,12 @@ class WavePainter extends CustomPainter {
           ..setFloat(i++, properties.amplitude) // waveAmplitude
           ..setFloat(i++, properties.quirk) // quirk
           ..setFloat(i++, properties.flickers) // flickers
+          ..setFloat(i++, BaseColors.background.red / 255) // flickers
+          ..setFloat(i++, BaseColors.background.green / 255) // flickers
+          ..setFloat(i++, BaseColors.background.blue / 255) // flickers
+          ..setFloat(i++, BaseColors.accent.red / 255) // flickers
+          ..setFloat(i++, BaseColors.accent.green / 255) // flickers
+          ..setFloat(i++, BaseColors.accent.blue / 255) // flickers
         ;
 
     canvas.drawRect(
