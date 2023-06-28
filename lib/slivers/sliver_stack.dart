@@ -134,7 +134,7 @@ class SliverStackRenderObject extends RenderSliver
 
     for (final box in boxChildren) {
       box.layout(constraints.asBoxConstraints(
-        minExtent: layoutExtent,
+        minExtent: panitExtent,
       ));
     }
 

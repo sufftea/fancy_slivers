@@ -5,11 +5,12 @@ class PaintOrderScrollView extends CustomScrollView {
   const PaintOrderScrollView({
     required this.childrenPaintOrder,
     super.slivers,
+    super.controller,
+    super.physics,
     super.key,
   }) : assert(childrenPaintOrder.length == slivers.length);
 
   final List<int> childrenPaintOrder;
-
   @override
   Widget buildViewport(
     BuildContext context,

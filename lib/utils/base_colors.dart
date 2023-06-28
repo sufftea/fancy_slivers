@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 class BaseColors {
-  static const background = Color.fromRGBO(0, 0, 0, 1);
-  static const accent =  Color.fromRGBO(165, 165, 165, 1);
+  static const wave = Color.fromRGBO(22, 129, 230, 1);
+  static const background =  Color.fromRGBO(255, 255, 255, 1);
+  static const onWave = Color.fromRGBO(255, 255, 255, 1);
 }

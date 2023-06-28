@@ -1,48 +1,64 @@
+import 'dart:ui' as ui;
+
 import 'package:fancy_slivers/entries/waves/header_1.dart';
 import 'package:fancy_slivers/entries/waves/wave_sliver.dart';
-import 'package:fancy_slivers/slivers/sliver_parallax.dart';
+import 'package:fancy_slivers/main.dart';
+import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
+import 'package:fancy_slivers/slivers/sliver_shader_mask.dart';
 import 'package:fancy_slivers/slivers/sliver_stack.dart';
 import 'package:fancy_slivers/utils/base_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_shaders/flutter_shaders.dart';
 
-class WaveStack extends StatelessWidget {
+class WaveStack extends StatefulWidget {
   const WaveStack({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SliverStack(
-      children: [
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            color: BaseColors.background,
-          ),
-        ),
-        for (final wave in WaveSliver.allWaves)
-          WaveSliver(
-            properties: wave,
-          ),
-        SliverParallax(
-          speed: 1,
-          viewportFraction: 1,
-          builder: (context, data) {
+  State<WaveStack> createState() => _WaveStackState();
+}
 
-            debugPrint('idealHeight: ${data.idealHeight}');
-            return SizedBox(
-              height: data.idealHeight,
-              child: Column(
-                children: [
-                  const Spacer(),
-                  Container(
-                    height: data.idealHeight * 0.15,
-                    color: Colors.green,
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        const Header1(),
-      ],
+class _WaveStackState extends State<WaveStack> {
+  late final FragmentShader maskShader;
+
+  @override
+  void initState() {
+    super.initState();
+
+    maskShader = ShaderProviders.waveMask.fragmentShader();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverShaderMask(
+      createShader: (constraints, geometry) {
+        debugPrint('offset: ${constraints.scrollOffset}');
+
+        final p = WaveSliver.allWaves.last;
+        int i = 0;
+        maskShader
+              ..setFloat(i++, constraints.crossAxisExtent) // width
+              ..setFloat(i++, geometry.scrollExtent) // height
+              ..setFloat(i++, -constraints.scrollOffset) // offset
+              ..setFloat(i++, p.position) // waveHeight
+              ..setFloat(i++, p.length) // waveLength
+              ..setFloat(i++, p.amplitude) // amplitude
+              ..setFloat(i++, p.angle) // angle
+              ..setFloat(i++, constraints.scrollOffset * p.offsetCoef) // offset
+              ..setFloat(i++, 1) // negative
+            ;
+
+        return maskShader;
+      },
+      child: SliverStack(
+        children: [
+          Container(color: BaseColors.background),
+          for (int i = 0; i < WaveSliver.allWaves.length - 1; i++)
+            WaveSliver(
+              properties: WaveSliver.allWaves[i],
+            ),
+          const Header1(),
+        ],
+      ),
     );
   }
 }

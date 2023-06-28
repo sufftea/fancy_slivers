@@ -20,6 +20,8 @@ flutter:
   uses-material-design: true
   shaders:
     - assets/shaders/wave.frag
+    - assets/shaders/wave_mask.frag
+    # - assets/shaders/test_shade.frag
 
   assets:
     - assets/images/

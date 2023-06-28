@@ -6,13 +6,16 @@ typedef ParallaxBuilder = Widget Function(
   ParallaxData data,
 );
 
+typedef LayoutExtentCompter = double Function(double paintOffset);
+
 class SliverParallax extends RenderObjectWidget {
   const SliverParallax({
     required this.speed,
     required this.builder,
-    this.listen = false,
+    this.dependencies = const <ParallaxAspect>{ParallaxAspect.idealHeight},
     this.sliverHeight,
     this.viewportFraction,
+    this.computeLayoutExtent,
     super.key,
   }) : assert(sliverHeight != null || viewportFraction != null);
 
@@ -20,9 +23,10 @@ class SliverParallax extends RenderObjectWidget {
   final double speed;
   final double? sliverHeight;
   final double? viewportFraction;
+  final LayoutExtentCompter? computeLayoutExtent;
 
   final ParallaxBuilder builder;
-  final bool listen;
+  final Set<ParallaxAspect> dependencies;
 
   @override
   RenderObjectElement createElement() {
@@ -35,7 +39,8 @@ class SliverParallax extends RenderObjectWidget {
       speed: speed,
       sliverHeight: sliverHeight,
       viewportFraction: viewportFraction,
-      listen: listen,
+      depedencies: dependencies,
+      computeLayoutExtent: computeLayoutExtent,
     );
   }
 }
@@ -77,7 +82,7 @@ class SliverParallaxElement extends RenderObjectElement {
     super.update(newWidget);
 
     renderObject.rebuildChildCallback = _updateCallback;
-    renderObject.markNeedsBuild();
+    renderObject.markNeedsLayout();
   }
 
   @override
@@ -125,24 +130,22 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
     required this.speed,
     required this.sliverHeight,
     required this.viewportFraction,
-    required this.listen,
+    required this.depedencies,
+    required this.computeLayoutExtent,
   });
   // TODO: get/set
   final double speed;
   final double? sliverHeight;
   final double? viewportFraction;
-  final bool listen;
+  final LayoutExtentCompter? computeLayoutExtent;
+  final Set<ParallaxAspect> depedencies;
 
   void Function(ParallaxData)? _rebuildChildCallback;
   set rebuildChildCallback(void Function(ParallaxData)? fun) {
     _rebuildChildCallback = fun;
   }
 
-  bool _needsChildRebuild = true;
-  void markNeedsBuild() {
-    _needsChildRebuild = true;
-    markNeedsLayout();
-  }
+  ParallaxData? _oldData;
 
   @override
   void performLayout() {
@@ -162,26 +165,13 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
         }(),
     };
 
-
-    /// TODO: So I don't forget tomorrow
-    /// 
-    /// You need to rebuild the child when the screen resizes even if [listen] 
-    /// is false
-    /// 
-
-    if (_needsChildRebuild || listen) {
-      _needsChildRebuild = false;
-      invokeLayoutCallback((_) {
-        _rebuildChildCallback?.call(ParallaxData(
-          idealHeight: idealHeight,
-          sliverHeight: scrollExtent,
-          scrollOffset: constraints.scrollOffset,
-          contentOffset: (height) {
-            return calculateChildOffset(scrollExtent, height);
-          },
-        ));
-      });
-    }
+    _rebuildChildIfNecessary(ParallaxData(
+      idealHeight: idealHeight,
+      sliverHeight: scrollExtent,
+      scrollOffset: constraints.scrollOffset,
+      sliverConstraints: constraints,
+      speed: speed,
+    ));
 
     child!.layout(
       constraints.asBoxConstraints(),
@@ -198,6 +188,7 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
       scrollExtent: scrollExtent,
       paintExtent: paintOffset,
       maxPaintExtent: scrollExtent,
+      layoutExtent: computeLayoutExtent?.call(paintOffset),
     );
   }
 
@@ -240,6 +231,39 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
 
     return childCenter - childHeight / 2;
   }
+
+  void _rebuildChildIfNecessary(ParallaxData newData) {
+    final old = _oldData;
+
+    if (old == null) {
+      invokeLayoutCallback((constraints) {
+        _rebuildChildCallback?.call(newData);
+      });
+
+      _oldData = newData;
+
+      return;
+    }
+
+    for (final dependency in depedencies) {
+      final mustRebuild = switch (dependency) {
+        ParallaxAspect.contentOffset => true,
+        ParallaxAspect.idealHeight => old.idealHeight != newData.idealHeight,
+        ParallaxAspect.scrollOffset => old.scrollOffset != newData.scrollOffset,
+        ParallaxAspect.sliverHeight => old.sliverHeight != newData.sliverHeight,
+      };
+
+      if (mustRebuild) {
+        invokeLayoutCallback((constraints) {
+          _rebuildChildCallback?.call(newData);
+        });
+
+        _oldData = newData;
+
+        return;
+      }
+    }
+  }
 }
 
 class ParallaxData {
@@ -247,14 +271,41 @@ class ParallaxData {
     this.scrollOffset = 0,
     this.idealHeight = 0,
     this.sliverHeight = 0,
-    this.contentOffset,
-  });
+    SliverConstraints? sliverConstraints,
+    double speed = 1,
+  })  : _sliverConstraints = sliverConstraints,
+        _speed = speed;
 
   final double scrollOffset;
   final double idealHeight;
   final double sliverHeight;
 
-  // content height is unknown when this is composed, so you need to provide 
-  // the height you're going to set to the child.
-  late final double Function(double contentHeight)? contentOffset;
+  final SliverConstraints? _sliverConstraints;
+  final double _speed;
+
+  double contentOffset(double contentHeight) {
+    final constraints = _sliverConstraints;
+
+    if (constraints == null) {
+      return 0;
+    }
+
+    final viewportCenter = constraints.viewportMainAxisExtent / 2;
+
+    final sliverCenter = constraints.precedingScrollExtent -
+        constraints.scrollOffset +
+        sliverHeight / 2;
+
+    final childCenter =
+        -(viewportCenter - sliverCenter) * _speed + viewportCenter;
+
+    return childCenter - contentHeight / 2;
+  }
+}
+
+enum ParallaxAspect {
+  scrollOffset,
+  idealHeight,
+  sliverHeight,
+  contentOffset,
 }

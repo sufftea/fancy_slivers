@@ -1,7 +1,8 @@
-import 'dart:math';
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
-import 'package:fancy_slivers/entries/waves/wave_sliver.dart';
-import 'package:fancy_slivers/slivers/sliver_parallax.dart';
+import 'dart:ui' as ui;
+
+import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
 import 'package:flutter/material.dart';
 
 class Header1 extends StatelessWidget {
@@ -11,34 +12,21 @@ class Header1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverParallax(
       viewportFraction: 1,
-      speed: WaveSliver.allWaves.last.parallaxSpeed,
-      listen: true,
+      speed: 0,
+      computeLayoutExtent: (paintOffset) {
+        return 0;
+      },
       builder: (context, data) {
-        MediaQuery.sizeOf(context);
-
-        final topOffset = data.contentOffset?.call(data.idealHeight) ?? 0;
-
         return SizedBox(
           height: data.idealHeight,
-          child: Stack(
-            children: [
-              Positioned(
-                top: -topOffset,
-                right: 0,
-                left: 0,
-                bottom: 0,
-                child: const Align(
-                  alignment: Alignment.topCenter,
-                  child: Text(
-                    'Header',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 100,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
+          child: Center(
+            child: Text(
+              'Hello,',
+              style: TextStyle(
+                fontSize: 100,
+                color: Colors.black,
               ),
-            ],
+            ),
           ),
         );
       },
