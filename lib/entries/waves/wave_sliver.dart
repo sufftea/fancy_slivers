@@ -17,8 +17,8 @@ class WaveSliver extends StatefulWidget {
   static final allWaves = [
     for (int i = 0; i <= _n; ++i)
       WaveProperties(
-        parallaxSpeed: lerpDouble(0.3, 1, i / _n)!,
-        position: lerpDouble(0.6, 0.3, i / _n)!,
+        parallaxSpeed: lerpDouble(0.4, 1, i / _n)!,
+        position: lerpDouble(0.5, 0.3, i / _n)!,
         length: lerpDouble(20, 50, i / _n)!,
         amplitude: lerpDouble(5, 20, i / _n)!,
         angle: 0,
@@ -27,15 +27,6 @@ class WaveSliver extends StatefulWidget {
         // offsetCoef: (sin(i * 10000) * 0.5 + 0.5) * 0.005,
         offsetCoef: 0.01 * pow(i / _n, 2),
       ),
-    // const WaveProperties(
-    //   parallaxSpeed: 1,
-    //   position: 0.3,
-    //   length: 50,
-    //   amplitude: 30,
-    //   angle: 0,
-    //   opacity: 1,
-    //   offsetCoef: 0.005,
-    // ),
   ];
 
   final WaveProperties properties;
@@ -58,7 +49,7 @@ class _WaveSliverState extends State<WaveSliver> {
   Widget build(BuildContext context) {
     return SliverParallax(
       speed: widget.properties.parallaxSpeed,
-      viewportFraction: 1,
+      viewportFraction: 1.5,
       dependencies: const {ParallaxAspect.contentOffset},
       computeLayoutExtent: (paintOffset) {
         return 0;

@@ -1,23 +1,22 @@
-import 'dart:ui' as ui;
-
-import 'package:fancy_slivers/entries/waves/header_1.dart';
+import 'package:fancy_slivers/entries/page_1/appbar_1.dart';
+import 'package:fancy_slivers/entries/page_1/giant_name_1.dart';
+import 'package:fancy_slivers/entries/page_1/picture_1.dart';
 import 'package:fancy_slivers/entries/waves/wave_sliver.dart';
 import 'package:fancy_slivers/main.dart';
-import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
 import 'package:fancy_slivers/slivers/sliver_shader_mask.dart';
 import 'package:fancy_slivers/slivers/sliver_stack.dart';
 import 'package:fancy_slivers/utils/base_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shaders/flutter_shaders.dart';
 
-class WaveStack extends StatefulWidget {
-  const WaveStack({super.key});
+class Page1Stack extends StatefulWidget {
+  const Page1Stack({super.key});
 
   @override
-  State<WaveStack> createState() => _WaveStackState();
+  State<Page1Stack> createState() => _Page1StackState();
 }
 
-class _WaveStackState extends State<WaveStack> {
+class _Page1StackState extends State<Page1Stack> {
   late final FragmentShader maskShader;
 
   @override
@@ -31,8 +30,6 @@ class _WaveStackState extends State<WaveStack> {
   Widget build(BuildContext context) {
     return SliverShaderMask(
       createShader: (constraints, geometry) {
-        debugPrint('offset: ${constraints.scrollOffset}');
-
         final p = WaveSliver.allWaves.last;
         int i = 0;
         maskShader
@@ -52,11 +49,24 @@ class _WaveStackState extends State<WaveStack> {
       child: SliverStack(
         children: [
           Container(color: BaseColors.background),
-          for (int i = 0; i < WaveSliver.allWaves.length - 1; i++)
-            WaveSliver(
-              properties: WaveSliver.allWaves[i],
-            ),
-          const Header1(),
+          const GiantName1(),
+          WaveSliver(
+            properties: WaveSliver.allWaves[0],
+          ),
+          WaveSliver(
+            properties: WaveSliver.allWaves[1],
+          ),
+          WaveSliver(
+            properties: WaveSliver.allWaves[2],
+          ),
+          const Picture1(),
+          WaveSliver(
+            properties: WaveSliver.allWaves[3],
+          ),
+          WaveSliver(
+            properties: WaveSliver.allWaves[4],
+          ),
+          const Appbar1(),
         ],
       ),
     );

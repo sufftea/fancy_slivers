@@ -271,24 +271,26 @@ class ParallaxData {
     this.scrollOffset = 0,
     this.idealHeight = 0,
     this.sliverHeight = 0,
-    SliverConstraints? sliverConstraints,
-    double speed = 1,
-  })  : _sliverConstraints = sliverConstraints,
-        _speed = speed;
+    required this.sliverConstraints,
+    this.speed = 1,
+  });
 
   final double scrollOffset;
   final double idealHeight;
   final double sliverHeight;
 
-  final SliverConstraints? _sliverConstraints;
-  final double _speed;
+  final SliverConstraints sliverConstraints;
+  final double speed;
 
-  double contentOffset(double contentHeight) {
-    final constraints = _sliverConstraints;
+  double contentOffset(
+    double contentHeight, {
+    double? withSpeed,
+  }) {
+    final constraints = sliverConstraints;
 
-    if (constraints == null) {
-      return 0;
-    }
+    // if (constraints == null) {
+    //   return 0;
+    // }
 
     final viewportCenter = constraints.viewportMainAxisExtent / 2;
 
@@ -296,8 +298,9 @@ class ParallaxData {
         constraints.scrollOffset +
         sliverHeight / 2;
 
+    final speed = withSpeed ?? this.speed;
     final childCenter =
-        -(viewportCenter - sliverCenter) * _speed + viewportCenter;
+        -(viewportCenter - sliverCenter) * speed + viewportCenter;
 
     return childCenter - contentHeight / 2;
   }

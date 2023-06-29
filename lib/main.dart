@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 
-import 'package:fancy_slivers/entries/waves/wave_stack.dart';
+import 'package:fancy_slivers/entries/page_1/page_1_stack.dart';
 import 'package:fancy_slivers/paint_order_scroll_view/paint_order_scroll_view.dart';
 import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
 import 'package:fancy_slivers/utils/base_colors.dart';
@@ -39,7 +39,7 @@ class MainApp extends StatelessWidget {
             0,
           ],
           slivers: [
-            const WaveStack(),
+            const Page1Stack(),
             SliverParallax(
               speed: 0,
               viewportFraction: 1,
