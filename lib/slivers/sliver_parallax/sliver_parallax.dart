@@ -222,9 +222,14 @@ class SliverParallaxRenderObject extends RenderSliverSingleBoxAdapter {
   double calculateChildOffset(double scrollExtent, double childHeight) {
     final viewportCenter = constraints.viewportMainAxisExtent / 2;
 
-    final sliverCenter = constraints.precedingScrollExtent -
+    final sliverCenter = (constraints.viewportMainAxisExtent -
+            constraints.remainingPaintExtent) -
         constraints.scrollOffset +
         scrollExtent / 2;
+
+    // if (viewportFraction == 1.05)
+    //   debugPrint(
+    //       'sliverCenter: $sliverCenter; pse: ${constraints.precedingScrollExtent}; scrollOffset: ${constraints.scrollOffset}; ');
 
     final childCenter =
         -(viewportCenter - sliverCenter) * speed + viewportCenter;

@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_shaders: ^0.1.1
+  flutter_svg: ^2.0.7
   google_fonts: ^5.1.0
 
 dev_dependencies:
@@ -26,3 +27,4 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/svgs/

@@ -1,9 +1,8 @@
 import 'dart:ui' as ui;
 
 import 'package:fancy_slivers/entries/page_1/page_1_stack.dart';
+import 'package:fancy_slivers/entries/page_2/page_2_stack.dart';
 import 'package:fancy_slivers/paint_order_scroll_view/paint_order_scroll_view.dart';
-import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
-import 'package:fancy_slivers/utils/base_colors.dart';
 import 'package:flutter/material.dart';
 
 class ShaderProviders {
@@ -40,25 +39,7 @@ class MainApp extends StatelessWidget {
           ],
           slivers: [
             const Page1Stack(),
-            SliverParallax(
-              speed: 0,
-              viewportFraction: 1,
-              builder: (context, data) {
-                return Container(
-                  height: data.idealHeight,
-                  color: BaseColors.wave,
-                  child: const Center(
-                    child: Text(
-                      'World',
-                      style: TextStyle(
-                        fontSize: 100,
-                        color: BaseColors.onWave,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+            const Page2Stack(),
             for (int i = 0; i < 3; i++)
               const SliverToBoxAdapter(
                 child: DecoratedBox(

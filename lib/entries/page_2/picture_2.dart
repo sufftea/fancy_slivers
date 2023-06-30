@@ -1,18 +1,16 @@
+import 'package:fancy_slivers/entries/page_2/page_2_stack.dart';
 import 'package:fancy_slivers/slivers/sliver_parallax/sliver_parallax.dart';
 import 'package:fancy_slivers/utils/landscape_content_wrapper.dart';
 import 'package:flutter/material.dart';
 
-class Picture1 extends StatelessWidget {
-  const Picture1({super.key});
+class Picture2 extends StatelessWidget {
+  const Picture2({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SliverParallax(
-      viewportFraction: 1.5,
+      viewportFraction: Page2Stack.viewportFraction,
       speed: 0,
-      computeLayoutExtent: (paintOffset) {
-        return 0;
-      },
       builder: (context, data) {
         return LandscapeContentWrapper(
           height: data.idealHeight,
@@ -42,7 +40,7 @@ class Picture1 extends StatelessWidget {
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
         clipBehavior: Clip.antiAlias,
         child: Image.asset(
-          'assets/images/hotel_outside.jpeg',
+          'assets/images/underwater_bedroom.jpeg',
           fit: BoxFit.cover,
         ),
       ),

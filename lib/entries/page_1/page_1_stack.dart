@@ -1,5 +1,5 @@
 import 'package:fancy_slivers/entries/page_1/appbar_1.dart';
-import 'package:fancy_slivers/entries/page_1/giant_name_1.dart';
+import 'package:fancy_slivers/common/giant_name.dart';
 import 'package:fancy_slivers/entries/page_1/picture_1.dart';
 import 'package:fancy_slivers/entries/waves/wave_sliver.dart';
 import 'package:fancy_slivers/main.dart';
@@ -37,6 +37,7 @@ class _Page1StackState extends State<Page1Stack> {
               ..setFloat(i++, geometry.scrollExtent) // height
               ..setFloat(i++, -constraints.scrollOffset) // offset
               ..setFloat(i++, p.position) // waveHeight
+              // ..setFloat(i++, 0) // waveHeight
               ..setFloat(i++, p.length) // waveLength
               ..setFloat(i++, p.amplitude) // amplitude
               ..setFloat(i++, p.angle) // angle
@@ -49,7 +50,10 @@ class _Page1StackState extends State<Page1Stack> {
       child: SliverStack(
         children: [
           Container(color: BaseColors.background),
-          const GiantName1(),
+          const GiantName(
+            color: BaseColors.wave,
+            viewportFraction: 1.5,
+          ),
           WaveSliver(
             properties: WaveSliver.allWaves[0],
           ),
