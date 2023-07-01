@@ -4,9 +4,6 @@ import 'package:fancy_slivers/utils/base_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-// const _verticalSpacing = 200.0;
-// const _horizontalAmount = 4;
-
 class ParallaxParticles extends StatelessWidget {
   const ParallaxParticles({
     required this.speed,
@@ -28,7 +25,9 @@ class ParallaxParticles extends StatelessWidget {
     return SliverParallax(
       speed: speed,
       viewportFraction: Page2Stack.viewportFraction,
-      dependencies: const {ParallaxAspect.contentOffset},
+      computeLayoutExtent: (paintOffset) {
+        return 0;
+      },
       builder: (context, data) {
         return SizedBox(
           height: data.idealHeight,

@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:fancy_slivers/entries/page_1/page_1_stack.dart';
 import 'package:fancy_slivers/entries/page_2/page_2_stack.dart';
+import 'package:fancy_slivers/entries/page_2/parallax_particles.dart';
 import 'package:fancy_slivers/paint_order_scroll_view/paint_order_scroll_view.dart';
 import 'package:flutter/material.dart';
 

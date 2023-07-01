@@ -1,6 +1,6 @@
 import 'package:fancy_slivers/common/giant_name.dart';
 import 'package:fancy_slivers/entries/page_2/appbar_2.dart';
-import 'package:fancy_slivers/entries/page_2/picture_2.dart';
+import 'package:fancy_slivers/entries/page_2/page_2_content.dart';
 import 'package:fancy_slivers/entries/page_2/parallax_particles.dart';
 import 'package:fancy_slivers/main.dart';
 import 'package:fancy_slivers/slivers/sliver_stack.dart';

@@ -20,7 +20,7 @@ class Picture2 extends StatelessWidget {
                 right: 20,
                 top: 0,
                 bottom: 0,
-                child: buildContent(data),
+                child: buildImage(data),
               ),
             ],
           ),
@@ -29,7 +29,7 @@ class Picture2 extends StatelessWidget {
     );
   }
 
-  Widget buildContent(ParallaxData data) {
+  Widget buildImage(ParallaxData data) {
     final height = data.sliverConstraints.viewportMainAxisExtent - 140;
 
     return Align(
